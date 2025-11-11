@@ -15,7 +15,7 @@ int alloc[TH_NUM][RSC];
 int available[RSC];
 
 void state();
-void request(*request, );
+void request(int thread_num,int rsc_request[]);
 
 
 int main(int argc, char* argv[])
@@ -103,7 +103,46 @@ int main(int argc, char* argv[])
     }
 }
 
-//
+void request(int thread_num, int res_request[])
+{
+    //thread의 번호 검사
+    if(thread_num < 0 || thread_num > TH_NUM)
+    {
+        printf("올바른 thread 번호가 아닙니다\n");
+        return;
+    }
+
+    //1단계: request <= need인지 검사
+    for(int i = 0; i < RSC; i++)
+    {
+        if(res_request[i] > need[thread_num][i])
+        {
+            printf("최대 요청치를 초과하였습니다\n");
+            return;
+        }
+    }
+
+    //2단계: request <= available인지 검사
+    for(int i = 0; i < RSC; i++)
+    {
+        if(res_request[i] > available[i])
+        {
+            printf("현재 사용 가능 자원 초과\n");
+            return;
+        }
+    }
+
+    //3단계: 요청된 자원을 쓰레드에 할당
+    for(int i = 0; i < RSC; i++)
+    {
+        available[i] = available[i] - res_request[i];
+        alloc[thread_num][i] = alloc[thread_num][i] + res_request[i];
+        need[thread_num][i] = need[thread_num][i] - res_request[i]; 
+    }
+
+}
+
+//현재 상태 출력
 void state()
 {
     printf("available: ");
