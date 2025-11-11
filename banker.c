@@ -110,6 +110,7 @@ void request(int thread_num, int res_request[])
     {
         printf("올바른 thread 번호가 아닙니다\n");
         return;
+        
     }
 
     //1단계: request <= need인지 검사
