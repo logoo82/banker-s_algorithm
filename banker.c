@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<stdbool.h>
 
 #define RSC 4
 #define TH_NUM 5
@@ -14,8 +15,12 @@ int alloc[TH_NUM][RSC];
 //사용 가능한 자원
 int available[RSC];
 
+//자원 상태 출력 함수
 void state();
+//자원 요청 함수
 void request(int thread_num,int rsc_request[]);
+bool safe_unsafe();
+
 
 
 int main(int argc, char* argv[])
@@ -66,6 +71,7 @@ int main(int argc, char* argv[])
     //사용자가 입력한 명령어
     char user_cmd[10];
 
+    //사용자 명령 입력받기
     while(1)
     {
         printf(">> ");
@@ -88,8 +94,7 @@ int main(int argc, char* argv[])
             {
                 scanf("%d", &rsc_request[i]);
             }
-
-
+            request(thread_num, rsc_request);
         }
         else if(strcmp(user_cmd, "RL") == 0)
         {
@@ -110,7 +115,7 @@ void request(int thread_num, int res_request[])
     {
         printf("올바른 thread 번호가 아닙니다\n");
         return;
-        
+
     }
 
     //1단계: request <= need인지 검사
@@ -141,6 +146,65 @@ void request(int thread_num, int res_request[])
         need[thread_num][i] = need[thread_num][i] - res_request[i]; 
     }
 
+}
+
+bool safe_unsafe()
+{
+    int work[RSC];
+    //각 쓰레드의 작업 완료 여부
+    bool Finish[TH_NUM] = {false};
+    //현재까지 작업 완료된 쓰레드 수
+    int cnt = 0;
+
+    //안전한 작업 순서
+    int safe_job[TH_NUM];
+
+    //work를 available로 초기화
+    for(int i = 0; i < RSC; i++)
+    {
+        work[i] = available[i];
+    }
+
+    //작업을 완료하지 않은 쓰레드가 남아있을 경우 반복
+    while(cnt < TH_NUM)
+    {
+        bool found = false;
+
+        for(int i = 0; i < TH_NUM; i++)
+        {
+            if(Finish[i] == false)
+            {
+                int j;
+                for(j = 0; i < RSC; j++)
+                {
+                    if(need[i][j] > work[j])
+                        break;
+                }
+
+                if(j == RSC)
+                {
+                    for(int k = 0; k < RSC; k++)
+                    {
+                        work[k] += alloc[i][k];
+                    }
+
+                    safe_job[cnt] = i;
+                    cnt++;
+
+                    Finish[i] = true;
+
+                    found = true;
+                }
+            }
+        }
+
+        if(found == false)
+            return false;
+    }
+
+    return true;
+
+    
 }
 
 //현재 상태 출력
