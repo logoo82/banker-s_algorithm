@@ -19,6 +19,7 @@ int available[RSC];
 void state();
 //자원 요청 함수
 void request(int thread_num,int rsc_request[]);
+void release(int thread_num, int rsc_release[]);
 bool safe_unsafe();
 
 
@@ -146,6 +147,18 @@ void request(int thread_num, int res_request[])
         need[thread_num][i] = need[thread_num][i] - res_request[i]; 
     }
 
+}
+
+void release(int thread_num, int rsc_release[])
+{
+    for(int i = 0; i < RSC; i++)
+    {
+        alloc[thread_num][i] -= rsc_release[i];
+        available[i] += rsc_release[i];
+        need[thread_num][i] += rsc_release[i];
+    }
+
+    printf("%d번 쓰레드 자원 반환 완료\n", thread_num);
 }
 
 bool safe_unsafe()
